@@ -1,0 +1,36 @@
+﻿DATA_BLOCK "Data_block_1"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+   STRUCT 
+      A1 : Array[0..10] of DInt;
+      a2 : Array[0..10] of Bool;
+      a3 : Bool;
+      a4 : Bool;
+      a5 : Int;
+      a6 : Real;
+   END_STRUCT;
+
+
+BEGIN
+
+END_DATA_BLOCK
+
+DATA_BLOCK "Data_block_2"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR 
+      A1 : Array[0..10] of DInt;
+      a2 : Array[0..10] of Bool;
+      a3 : Bool;
+      a4 : Bool;
+      a5 : Int;
+      a6 : Real;
+   END_VAR
+
+
+BEGIN
+
+END_DATA_BLOCK
+
