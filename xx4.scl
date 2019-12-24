@@ -1,0 +1,52 @@
+﻿DATA_BLOCK "内部变量"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+   STRUCT 
+      上电完成 : Bool; 0.0
+      轴设置速度 : Int; 2.0
+      X轴正转 : Bool;
+      X轴反转 : Bool;
+      Y轴正转 : Bool;
+      Y轴反转 : Bool;
+      X轴手动增量运动触发 : Bool;
+      Y轴手动增量运动触发 : Bool;
+      X轴增量运动 : Bool;
+      Y轴增量运动 : Bool;
+      X轴绝对运动触发 : Bool;
+      Y轴绝对运动触发 : Bool;
+      X轴绝对运动 : Bool;
+      Y轴绝对运动 : Bool;
+      X轴回零完成 : Bool;
+      Y轴回零完成 : Bool;
+      X轴设置原点触发 : Bool;
+      Y轴设置原点触发 : Bool;
+      X轴设置零点 : Bool;
+      Y轴设置零点 : Bool;
+      X轴复位触发 : Bool;
+      X轴复位 : Bool;
+      Y轴复位触发 : Bool;
+      Y轴复位 : Bool;
+      X轴停止触发 : Bool;
+      X轴停止 : Bool;
+      Y轴停止触发 : Bool;
+      Y轴停止 : Bool;
+      X轴运动速度 : Real;
+      Y轴运动速度 : Real;
+      X轴运动触发 : Bool;
+      Y轴运动触发 : Bool;
+      X轴上升沿 : Bool;
+      Y轴上升沿 : Bool;
+      X轴增量设置 : Real;
+      Y轴增量设置 : Real;
+      X轴绝对设置 : Real;
+      Y轴绝对设置 : Real;
+      X轴往复运动步号 : Int;
+      Y轴往复运动步号 : Int;
+   END_STRUCT;
+
+
+BEGIN
+
+END_DATA_BLOCK
+

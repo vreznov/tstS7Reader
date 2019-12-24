@@ -21,12 +21,12 @@ DATA_BLOCK "Data_block_2"
 VERSION : 0.1
 NON_RETAIN
    VAR 
-      A1 : Array[0..10] of DInt;
-      a2 : Array[0..10] of Bool;
-      a3 : Bool;
-      a4 : Bool;
-      a5 : Int;
-      a6 : Real;
+      A10 : Array[0..10] of DInt;
+      a11 : Array[0..10] of Bool;
+      a12 : Bool;
+      a13 : Bool;
+      a14 : Int;
+      a15 : Real;
    END_VAR
 
 

@@ -1,0 +1,44 @@
+	Static									
+	A1	Array[0..10] of DInt	0.0			False	True	True	False	
+	A1[0]	DInt	0.0	0		False	True	True	False	
+	A1[1]	DInt	4.0	0		False	True	True	False	
+	A1[2]	DInt	8.0	0		False	True	True	False	
+	A1[3]	DInt	12.0	0		False	True	True	False	
+	A1[4]	DInt	16.0	0		False	True	True	False	
+	A1[5]	DInt	20.0	0		False	True	True	False	
+	A1[6]	DInt	24.0	0		False	True	True	False	
+	A1[7]	DInt	28.0	0		False	True	True	False	
+	A1[8]	DInt	32.0	0		False	True	True	False	
+	A1[9]	DInt	36.0	0		False	True	True	False	
+	A1[10]	DInt	40.0	0		False	True	True	False	
+	a2	Array[0..25] of Bool	44.0			False	True	True	False	
+	a2[0]	Bool	0.0	false		False	True	True	False	
+	a2[1]	Bool	0.1	false		False	True	True	False	
+	a2[2]	Bool	0.2	false		False	True	True	False	
+	a2[3]	Bool	0.3	false		False	True	True	False	
+	a2[4]	Bool	0.4	false		False	True	True	False	
+	a2[5]	Bool	0.5	false		False	True	True	False	
+	a2[6]	Bool	0.6	false		False	True	True	False	
+	a2[7]	Bool	0.7	false		False	True	True	False	
+	a2[8]	Bool	1.0	false		False	True	True	False	
+	a2[9]	Bool	1.1	false		False	True	True	False	
+	a2[10]	Bool	1.2	false	FALSE	False	True	True	False	
+	a2[11]	Bool	1.3	false	FALSE	False	True	True	False	
+	a2[12]	Bool	1.4	false	FALSE	False	True	True	False	
+	a2[13]	Bool	1.5	false	FALSE	False	True	True	False	
+	a2[14]	Bool	1.6	false	FALSE	False	True	True	False	
+	a2[15]	Bool	1.7	false	FALSE	False	True	True	False	
+	a2[16]	Bool	2.0	false	FALSE	False	True	True	False	
+	a2[17]	Bool	2.1	false	FALSE	False	True	True	False	
+	a2[18]	Bool	2.2	false	TRUE	False	True	True	False	
+	a2[19]	Bool	2.3	false	FALSE	False	True	True	False	
+	a2[20]	Bool	2.4	false	FALSE	False	True	True	False	
+	a2[21]	Bool	2.5	false	FALSE	False	True	True	False	
+	a2[22]	Bool	2.6	false	FALSE	False	True	True	False	
+	a2[23]	Bool	2.7	false	FALSE	False	True	True	False	
+	a2[24]	Bool	3.0	false	FALSE	False	True	True	False	
+	a2[25]	Bool	3.1	false	FALSE	False	True	True	False	
+	a3	Bool	48.0	false	FALSE	False	True	True	False	
+	a4	Bool	48.1	false	FALSE	False	True	True	False	
+	a5	Int	50.0	0	0	False	True	True	False	
+	a6	Real	52.0	0.0	0.0	False	True	True	False	

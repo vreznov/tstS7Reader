@@ -12,15 +12,38 @@ enum class reg_type //寄存器类型
     mDouble = 0x06
 };
 
-KS7Reader::KS7Reader(QObject *parent) : QObject(parent)
+KS7Reader::KS7Reader(QObject *parent) : QThread(parent)
 {
     KInit();
+}
+
+KS7Reader::~KS7Reader()
+{
+    //销毁DB对象
+    plcVarClear();
+}
+
+int KS7Reader::plcType2Length(QString fml_type)
+{
+    if( fml_type == tr("Bool")) {return 1;}
+    else if( fml_type == tr("SInt")) {return 10;}
+    else if( fml_type == tr("Int")) {return 20;}
+    else if( fml_type == tr("DInt")) {return 40;}
+    else if( fml_type == tr("Real")) {return 40;}
+    else if( fml_type == tr("LReal")) {return 80;}
+
+    return 0;
 }
 
 int KS7Reader::slot_connect()
 {
     int ret = clt.ConnectTo(_ip.toStdString().c_str(), m_pack, m_slot);
-    if(ret == 0) emit connectedChanged();
+    if(ret == 0) {
+        emit connectedChanged();
+        qCDebug(plcReader()) << tr("plc connected sucessfull");
+    } else {
+        qCDebug(plcReader()) << tr("plc connected failed");
+    }
 
     return ret;
 }
@@ -31,19 +54,84 @@ void KS7Reader::slot_disconnect()
     {
         clt.Disconnect();
         emit connectedChanged();
+        qCDebug(plcReader()) << tr("plc disconnected sucessfull");
     }
 }
 
+void KS7Reader::slot_startRead()
+{
+    start();
+}
+
+void KS7Reader::slot_stopRead()
+{
+    exit();
+    qCDebug(plcReader()) << tr("waiting for thread quit...");
+    wait();
+    qCDebug(plcReader()) << tr("thread quit done");
+}
 
 void KS7Reader::KInit()
 {
-    //生成一个默认的DB信息，用于没有DB文件读取时的数据源
+}
+
+void KS7Reader::plcVarClear()
+{
+    qDeleteAll(plcVar.begin(), plcVar.end());
+    plcVar.clear();
+}
+
+void KS7Reader::GenaretaMemMap()
+{
+    int curOffset = 0;  //当前变量的内存偏移地址
+    //    int bnum = 0;  //连续的bool数量
+    //    int bnum2 = 0;  //连续bool满16计数
+
+    foreach (PlcDB* pdb, plcVar) {
+
+        //计算上一个元素到当前的内存偏移
+        pdb->offsets.append(0);
+        for(int i=1; i<pdb->names.length();i++) {
+            if(pdb->types[i] == tr("Bool")) {
+
+            }
+            else if(pdb->types[i] == tr("SInt")){
+
+            }
+            else if(pdb->types[i] == tr("Int")){
+
+            }
+            else if(pdb->types[i] == tr("Real")){
+
+            }
+            else if(pdb->types[i] == tr("LReal")){
+
+            }
+            pdb->offsets.append(curOffset);
+        }
+
+        qDebug() << pdb->offsets;
+    }
+
 }
 
 void KS7Reader::slot_Req()
 {
-    //    ReadTempture();
     //    ReqData(2, 0, 8);
+    memset(m_reciveBuffer, 0, sizeof (m_reciveBuffer));
+
+    //在这里实现自己的数据读取
+    //各个数据需要 高低位反转. 存放bool的连续字节不需要反转
+    int rret = clt.DBRead(2, 0, 54, &m_reciveBuffer);
+    S7_DINT v1 = 0;
+    reinterpret_cast<quint8*>(&v1)[0] = m_reciveBuffer[7];
+    reinterpret_cast<quint8*>(&v1)[1] = m_reciveBuffer[6];
+    reinterpret_cast<quint8*>(&v1)[2] = m_reciveBuffer[5];
+    reinterpret_cast<quint8*>(&v1)[3] = m_reciveBuffer[4];
+    //在这里实现自己的数据写入
+
+
+    qDebug() << tr("read done");
 }
 
 //void KS7Reader::ReqData(int fml_db, int fml_stIndex, int fml_len)
@@ -73,7 +161,6 @@ void KS7Reader::slot_Req()
 //            }
 //        }
 //        cout<<"read val: "<<_ctData[0]<<endl;
-////        printf("read val is: %08x\r\n", _ctData[0]);
 //    }
 //}
 
@@ -114,8 +201,9 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
     QString curPath = QDir::currentPath();
     if( !QFile::exists(fml_ffn) ) return ret;
 
-    plcVar.clear();
+    plcVarClear();
     PlcDB* pdb = nullptr;
+
 
     //开始操作文件
     QFile file(fml_ffn);
@@ -130,6 +218,7 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
         if(!adb && sline.indexOf("DATA_BLOCK \"") != -1) { //找到了首行定义
             adb = true;
             pdb = new PlcDB();
+            plcVar.append(pdb);
             dbLine = 0;
         }
         if(adb && sline.indexOf("END_DATA_BLOCK") != -1) { //找到了DB定义结尾
@@ -141,8 +230,8 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
                 QRegExp reg("\"(\\w+)\"");  //DATA_BLOCK "Data_block_1"
                 int pos = reg.indexIn(sline);
                 if(pos != -1)  {
-                    pdb->vName = reg.cap(1);  //提取子元素
-                    qCDebug(plcReader()) << "read db name: " << pdb->vName;
+                    pdb->dbName = reg.cap(1);  //提取子元素
+                    qCDebug(plcReader()) << "read db name: " << pdb->dbName;
                 }
             }
             else if (dbLine == 2) {  //是否优化
@@ -151,7 +240,7 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
                 if(pos != -1)  {
                     qDebug() << reg.capturedTexts();
                     pdb->s7_Optimized_Access = reg.cap(1) != "FALSE";
-//                    qCDebug(plcReader()) << pdb->vName <<" s7_Optimized_Access" << pdb->s7_Optimized_Access;
+                    //                    qCDebug(plcReader()) << pdb->vName <<" s7_Optimized_Access" << pdb->s7_Optimized_Access;
                 }
             }
             else if(dbLine >= 6) { //开始记录数据
@@ -168,6 +257,7 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
                         pos += reg.matchedLength();
                         scols.append(reg.capturedTexts()[0]);
                     }
+
                     //向DB添加数据，先判断是否是Array
                     pdb->names.append(scols[0]);
                     if(scols[1] == tr("Array")) {  //Array转换为QList
@@ -188,6 +278,7 @@ bool KS7Reader::loadDBInfo(QString fml_ffn)
         }
     }
 
+    GenaretaMemMap();
     goto done;
 
 err1:
@@ -195,7 +286,109 @@ err1:
     goto done;
 
 done:
+    //    qDebug() << pdb->offsets;
     return ret;
+}
+
+bool KS7Reader::loadDBInfo2(QString fml_ffn)
+{
+    bool ret = false;
+    QString curPath = QDir::currentPath();
+    if( !QFile::exists(fml_ffn) ) return ret;
+
+    plcVarClear();
+    PlcDB* pdb = new PlcDB();
+    plcVar.append(pdb);
+
+    //开始操作文件
+    QFile file(fml_ffn);
+    QTextStream ts(&file);
+    QString sline;
+    int dbLine = 0;
+    int bnum = 0;
+    if(!file.open(QIODevice::Text | QIODevice::ReadOnly)) goto err1;
+
+    while (!ts.atEnd()) {
+        sline = ts.readLine();
+
+        if(sline.isEmpty()) continue;
+
+        dbLine++;
+        if(dbLine == 1) {  //获取db名称
+            QRegExp reg("\"(\\w+)\"");  //DATA_BLOCK "Data_block_1"
+            int pos = reg.indexIn(sline);
+            if(pos != -1)  {
+                pdb->dbName = reg.cap(1);  //提取子元素
+                qCDebug(plcReader()) << "read db name: " << pdb->dbName;
+            }
+        }
+        else if(dbLine >= 2) { //开始记录数据
+            //没有则继续按照变量读取
+            //(\w+) : (\w+)(\S+)?( \w+)* 备用，匹配任意声明
+            QRegExp reg("\\w+");  //匹配任意字幕、数字组成的短语,忽略空格及符号
+            int count = 0, pos = 0;
+            QStringList scols;
+            while ((pos = reg.indexIn(sline, pos)) != -1) {
+                ++count;
+                pos += reg.matchedLength();
+                scols.append(reg.capturedTexts()[0]);
+            }
+            //向DB添加数据，先判断是否是Array
+            pdb->names.append(scols[0]);
+            if(scols[1] == tr("Array")) {  //Array转换为QList
+                pdb->types.append(tr("Array[%1..%2] of %3").arg(scols[2]).arg(scols[3]).arg(scols[5]));
+                QVariantList aryVal, aryOffset;
+                int firstIndex = static_cast<int>(scols[6].toDouble() * 10);
+                for(int i=0; i<scols[3].toInt()-scols[2].toInt()+1; i++) {
+                    if(scols[5] == tr("Bool")) {
+                        aryVal.append(QVariant(false));
+                        aryOffset.append(firstIndex + bnum);
+                        bnum++;
+                        if(bnum > 7) {
+                            firstIndex += 10;
+                            bnum = 0;
+                        }
+                    } else {
+                        aryVal.append(QVariant(0));
+                        int tmp1 = i * plcType2Length(scols[5]);
+                        aryOffset.append(firstIndex + i * plcType2Length(scols[5]));
+                    }
+                }
+                pdb->offsets.append(aryOffset);
+                pdb->values.append(aryVal);
+            }else {
+                pdb->types.append(scols[1]);
+                pdb->values.append(0);  //给一个默认的值
+                int offset = scols[2].toInt()*10 + scols[3].toInt();
+                QVariantList aryOffset;
+                aryOffset.append(offset);
+                pdb->offsets.append(aryOffset);
+            }
+
+        }
+    }
+
+    GenaretaMemMap();
+    goto done;
+
+err1:
+    qCDebug(plcReader) << tr("error occurred when open file ") << fml_ffn;
+    goto done;
+
+done:
+//    qDebug() << pdb->names <<endl;
+//    qDebug() << pdb->types <<endl;
+//    qDebug() << pdb->offsets <<endl;
+    return ret;
+}
+
+void KS7Reader::run()
+{
+    qDebug() << "thread id" << QThread::currentThreadId();
+    ptmr.reset(new QTimer());
+    connect(ptmr.data(), &QTimer::timeout, this, &KS7Reader::slot_Req);
+    ptmr->start(m_reqInterval);
+    exec();
 }
 
 
@@ -204,19 +397,19 @@ bool KS7Reader::connected()
     return clt.Connected;
 }
 
-quint32 KS7Reader::reqInterval()
+qint32 KS7Reader::reqInterval()
 {
     return m_reqInterval;
 }
 
-void KS7Reader::setReqInterval(quint32 fml_interval)
+void KS7Reader::setReqInterval(qint32 fml_interval)
 {
     if(fml_interval < 1e10) {
         m_reqInterval = fml_interval;
     }
 }
 
-QVariant KS7Reader::readVariavle(QString fml_vName)
+QVariant KS7Reader::readVariavle(QString fml_vName, int fml_index)
 {
     return QVariant();
 }
@@ -231,3 +424,4 @@ KS7Reader::PlcDB::~PlcDB()
 {
     qCDebug(plcReader()) << "PlcDb release";
 }
+

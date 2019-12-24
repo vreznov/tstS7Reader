@@ -1,0 +1,7 @@
+Static				
+A1	Array[0..10] of DInt	0.0		
+a2	Array[0..25] of Bool	44.0		
+a3	Bool	48.0	false	FALSE
+a4	Bool	48.1	false	FALSE
+a5	Int	50.0	0	0
+a6	Real	52.0	0.0	0.0
